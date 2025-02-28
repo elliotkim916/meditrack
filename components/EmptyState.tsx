@@ -1,9 +1,12 @@
 import colors from '@/Constant/colors';
 import strings from '@/Constant/strings';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 const EmptyState = () => {
+  const router = useRouter();
+
   return (
     <View style={{ marginTop: 80, display: 'flex', alignItems: 'center' }}>
       <Image
@@ -31,6 +34,7 @@ const EmptyState = () => {
           width: '100%',
           marginTop: 30,
         }}
+        onPress={() => router.push('/add-new-medication')}
       >
         <Text style={{ textAlign: 'center', fontSize: 17, color: 'white' }}>
           {strings.ADD_NEW_MED}
