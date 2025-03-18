@@ -1,15 +1,21 @@
 import colors from '@/Constant/colors';
 import { typeList, whenToTake } from '@/Constant/options';
 import {
+  ConvertDateTime,
+  formatDateForText,
+  formatTime,
+} from '@/service/ConvertDateTime';
+import {
   AntDesign,
   MaterialCommunityIcons,
   MaterialIcons,
 } from '@expo/vector-icons';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   FlatList,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -24,6 +30,7 @@ interface FormData {
   when: string;
   startDate: Date | undefined;
   endDate: Date | undefined;
+  reminder: Date | string | undefined;
 }
 
 const AddMedicationForm = () => {
@@ -34,7 +41,11 @@ const AddMedicationForm = () => {
     when: '',
     startDate: undefined,
     endDate: undefined,
+    reminder: undefined,
   });
+  const [showStartDate, setShowStartDate] = useState(false);
+  const [showEndDate, setShowEndDate] = useState(false);
+  const [showTimerPicker, setShowTimerPicker] = useState(false);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -118,23 +129,30 @@ const AddMedicationForm = () => {
           onValueChange={(itemValue, i) => {
             handleInputChange('when', itemValue);
           }}
-          style={{ width: '90%', borderWidth: 0 }}
+          style={{
+            width: '90%',
+            height: Platform.OS === 'ios' ? 50 : 40, // Increase the height for better interaction
+            alignSelf: 'center',
+            borderWidth: 0,
+            paddingHorizontal: 5,
+          }}
         >
-          {whenToTake.map((item, i) => {
-            return (
-              <Picker.Item
-                key={i}
-                label={item}
-                value={item}
-                style={styles.textInput}
-              />
-            );
-          })}
+          {whenToTake.map((item, i) => (
+            <Picker.Item
+              key={i}
+              label={item}
+              value={item}
+              style={styles.textInput}
+            />
+          ))}
         </Picker>
       </View>
 
       <View style={styles.dateInputGroup}>
-        <View style={[styles.inputGroup, { flex: 1 }]}>
+        <TouchableOpacity
+          style={[styles.inputGroup, { flex: 1 }]}
+          onPress={() => setShowStartDate(true)}
+        >
           <AntDesign
             style={styles.icon}
             name="calendar"
@@ -142,17 +160,28 @@ const AddMedicationForm = () => {
             color="black"
           />
           <Text style={styles.text}>
-            {formData.startDate ? `${formData.startDate}` : 'Start Date'}
+            {formData.startDate
+              ? formatDateForText(formData.startDate)
+              : 'Start Date'}
           </Text>
+        </TouchableOpacity>
+        {showStartDate && (
           <RNDateTimePicker
             minimumDate={new Date()}
-            onChange={(e) =>
-              handleInputChange('startDate', e.nativeEvent.timestamp)
-            }
+            onChange={(e) => {
+              handleInputChange(
+                'startDate',
+                ConvertDateTime(e.nativeEvent.timestamp)
+              );
+              setShowStartDate(false);
+            }}
             value={formData.startDate ?? new Date()}
           />
-        </View>
-        <View style={[styles.inputGroup, { flex: 1 }]}>
+        )}
+        <TouchableOpacity
+          style={[styles.inputGroup, { flex: 1 }]}
+          onPress={() => setShowEndDate(true)}
+        >
           <AntDesign
             style={styles.icon}
             name="calendar"
@@ -160,10 +189,53 @@ const AddMedicationForm = () => {
             color="black"
           />
           <Text style={styles.text}>
-            {formData.endDate ? `${formData.endDate}` : 'End Date'}
+            {formData.endDate
+              ? formatDateForText(formData.endDate)
+              : 'End Date'}
           </Text>
-        </View>
+        </TouchableOpacity>
+        {showEndDate && (
+          <RNDateTimePicker
+            minimumDate={new Date()}
+            onChange={(e) => {
+              handleInputChange(
+                'endDate',
+                ConvertDateTime(e.nativeEvent.timestamp)
+              );
+              setShowEndDate(false);
+            }}
+            value={formData.endDate ?? new Date()}
+          />
+        )}
       </View>
+      <View style={styles.dateInputGroup}>
+        <TouchableOpacity
+          style={[styles.inputGroup, { flex: 1 }]}
+          onPress={() => setShowTimerPicker(true)}
+        >
+          <MaterialIcons
+            name="timer"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />
+          <Text style={styles.text}>
+            {formData.reminder
+              ? `${formData.reminder}`
+              : 'Select Reminder Time'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      {showTimerPicker && (
+        <RNDateTimePicker
+          mode="time"
+          onChange={(e) => {
+            handleInputChange('reminder', formatTime(e.nativeEvent.timestamp));
+            setShowTimerPicker(false);
+          }}
+          value={formData.reminder ? new Date(formData.reminder) : new Date()}
+        />
+      )}
     </View>
   );
 };
@@ -184,10 +256,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: 'white',
   },
+  inputContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 12,
+    borderColor: colors.LIGHT_GRAY_BORDER,
+  },
   textInput: {
     flex: 1,
     marginLeft: 10,
-    fontSize: 16,
   },
   icon: {
     color: colors.PRIMARY,
