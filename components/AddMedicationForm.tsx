@@ -178,6 +178,7 @@ const AddMedicationForm = () => {
             value={formData.startDate ?? new Date()}
           />
         )}
+
         <TouchableOpacity
           style={[styles.inputGroup, { flex: 1 }]}
           onPress={() => setShowEndDate(true)}
@@ -208,6 +209,7 @@ const AddMedicationForm = () => {
           />
         )}
       </View>
+
       <View style={styles.dateInputGroup}>
         <TouchableOpacity
           style={[styles.inputGroup, { flex: 1 }]}
@@ -225,17 +227,24 @@ const AddMedicationForm = () => {
               : 'Select Reminder Time'}
           </Text>
         </TouchableOpacity>
+        {showTimerPicker && (
+          <RNDateTimePicker
+            mode="time"
+            onChange={(e) => {
+              handleInputChange(
+                'reminder',
+                formatTime(e.nativeEvent.timestamp)
+              );
+              setShowTimerPicker(false);
+            }}
+            value={formData.reminder ? new Date(formData.reminder) : new Date()}
+          />
+        )}
       </View>
-      {showTimerPicker && (
-        <RNDateTimePicker
-          mode="time"
-          onChange={(e) => {
-            handleInputChange('reminder', formatTime(e.nativeEvent.timestamp));
-            setShowTimerPicker(false);
-          }}
-          value={formData.reminder ? new Date(formData.reminder) : new Date()}
-        />
-      )}
+
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>Add New Medication</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -284,6 +293,18 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     gap: 10,
+  },
+  button: {
+    padding: 15,
+    backgroundColor: colors.PRIMARY,
+    borderRadius: 15,
+    width: '100%',
+    marginTop: 25,
+  },
+  buttonText: {
+    fontSize: 17,
+    color: 'white',
+    textAlign: 'center',
   },
 });
 

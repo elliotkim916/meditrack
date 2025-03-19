@@ -1,15 +1,15 @@
 import AddMedicationForm from '@/components/AddMedicationForm';
 import AddMedicationHeader from '@/components/AddMedicationHeader';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { ScrollView, Text } from 'react-native';
 
 const AddNewMedication = () => {
   return (
-    <View>
+    <ScrollView>
       <AddMedicationHeader />
       <AddMedicationForm />
       <Text></Text>
-    </View>
+    </ScrollView>
   );
 };
 
