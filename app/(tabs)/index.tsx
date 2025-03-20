@@ -4,7 +4,7 @@ import { auth } from '@/config/FirebaseConfig';
 import colors from '@/Constant/colors';
 import { removeLocalStorage } from '@/service/Storage';
 import { signOut } from 'firebase/auth';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 const HomeScreen = () => {
   const handleSignOut = () => {
@@ -13,7 +13,7 @@ const HomeScreen = () => {
   };
 
   return (
-    <View
+    <ScrollView
       style={{
         padding: 25,
         backgroundColor: 'white',
@@ -28,7 +28,7 @@ const HomeScreen = () => {
           Log Out
         </Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 

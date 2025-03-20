@@ -1,7 +1,7 @@
 import moment from 'moment';
 
 export const ConvertDateTime = (timeStamp: number) => {
-  return new Date(timeStamp).setHours(0, 0, 0, 0);
+  return new Date(timeStamp);
 };
 
 export const formatDateForText = (date: Date) => {

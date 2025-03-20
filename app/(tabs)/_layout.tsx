@@ -23,6 +23,7 @@ const TabLayout = () => {
       <Tabs.Screen
         name="index"
         options={{
+          headerShown: false,
           tabBarLabel: 'Home',
           tabBarIcon: ({ color, size }) => (
             <FontAwesome name="home" size={size} color={color} />

@@ -1,3 +1,4 @@
+import { db } from '@/config/FirebaseConfig';
 import colors from '@/Constant/colors';
 import { typeList, whenToTake } from '@/Constant/options';
 import {
@@ -5,6 +6,7 @@ import {
   formatDateForText,
   formatTime,
 } from '@/service/ConvertDateTime';
+import { getLocalStorage } from '@/service/Storage';
 import {
   AntDesign,
   MaterialCommunityIcons,
@@ -12,8 +14,12 @@ import {
 } from '@expo/vector-icons';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+import { useRouter } from 'expo-router';
+import { doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
   Platform,
   StyleSheet,
@@ -46,9 +52,51 @@ const AddMedicationForm = () => {
   const [showStartDate, setShowStartDate] = useState(false);
   const [showEndDate, setShowEndDate] = useState(false);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const saveMedication = async () => {
+    const docId = Date.now().toString();
+    const user = await getLocalStorage('userDetail');
+
+    if (
+      !formData.name ||
+      !formData.type ||
+      !formData.dose ||
+      !formData.endDate ||
+      !formData.startDate
+    ) {
+      Platform.OS === 'ios' || Platform.OS === 'android'
+        ? Alert.alert('Enter all fields..')
+        : alert('Enter all fields..');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await setDoc(doc(db, 'medication', docId), {
+        ...formData,
+        userEmail: user.email,
+        docId,
+      });
+      Platform.OS === 'ios' || Platform.OS === 'android'
+        ? Alert.alert('Great!', 'New medication added successfully!', [
+            {
+              text: 'Okay',
+              onPress: () => router.push('/'),
+            },
+          ])
+        : alert('New medication added successfully!');
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -242,8 +290,12 @@ const AddMedicationForm = () => {
         )}
       </View>
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Add New Medication</Text>
+      <TouchableOpacity style={styles.button} onPress={() => saveMedication()}>
+        {loading ? (
+          <ActivityIndicator size="large" color="white" />
+        ) : (
+          <Text style={styles.buttonText}>Add New Medication</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
