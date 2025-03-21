@@ -1,5 +1,5 @@
-import EmptyState from '@/components/EmptyState';
 import Header from '@/components/Header';
+import MedicationList from '@/components/MedicationList';
 import { auth } from '@/config/FirebaseConfig';
 import colors from '@/Constant/colors';
 import { removeLocalStorage } from '@/service/Storage';
@@ -22,7 +22,9 @@ const HomeScreen = () => {
       }}
     >
       <Header />
-      <EmptyState />
+      {/* <EmptyState /> */}
+      <MedicationList />
+
       <TouchableOpacity onPress={() => handleSignOut()} style={styles.button}>
         <Text style={{ fontSize: 17, color: 'white', textAlign: 'center' }}>
           Log Out

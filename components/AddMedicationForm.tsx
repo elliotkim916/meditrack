@@ -5,6 +5,7 @@ import {
   ConvertDateTime,
   formatDateForText,
   formatTime,
+  getDatesRange,
 } from '@/service/ConvertDateTime';
 import { getLocalStorage } from '@/service/Storage';
 import {
@@ -83,6 +84,7 @@ const AddMedicationForm = () => {
         ...formData,
         userEmail: user.email,
         docId,
+        dates: getDatesRange(formData.startDate, formData.endDate),
       });
       Platform.OS === 'ios' || Platform.OS === 'android'
         ? Alert.alert('Great!', 'New medication added successfully!', [

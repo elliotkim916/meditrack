@@ -17,3 +17,30 @@ export const formatTime = (timeStamp: number) => {
 
   return timeString;
 };
+
+export const getDatesRange = (startDate: Date, endDate: Date) => {
+  const start = moment(new Date(startDate), 'MM/DD/YYYY');
+  const end = moment(new Date(endDate), 'MM/DD/YYYY');
+  const dates = [];
+
+  while (start.isSameOrBefore(end)) {
+    dates.push(start.format('MM/DD/YYYY'));
+    start.add(1, 'days');
+  }
+
+  return dates;
+};
+
+export const getDateRangeToDisplay = () => {
+  const dateList = [];
+
+  for (let i = 0; i <= 7; i++) {
+    dateList.push({
+      date: moment().add(i, 'days').format('DD'), // 27
+      day: moment().add(i, 'days').format('dd'), // Tue
+      formattedDate: moment().add(i, 'days').format('L'), //12/27/2025
+    });
+  }
+
+  return dateList;
+};
