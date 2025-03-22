@@ -34,7 +34,6 @@ const SignIn = () => {
       .then(async (userCredential) => {
         // Signed in
         const user = userCredential.user;
-        console.log('USER', user);
         await setLocalStorage('userDetail', user);
         router.replace('(tabs)' as Href);
       })

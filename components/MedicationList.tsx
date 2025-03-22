@@ -1,20 +1,64 @@
+import { db } from '@/config/FirebaseConfig';
 import colors from '@/Constant/colors';
 import { getDateRangeToDisplay } from '@/service/ConvertDateTime';
+import { getLocalStorage } from '@/service/Storage';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import MedicationCardItem from './MedicationCardItem';
 
 const MedicationList = () => {
   const getDateRangeList = () => {
     return getDateRangeToDisplay();
   };
 
-  const [medList, setMedList] = useState();
+  const [medList, setMedList] = useState<any[]>([]);
   const [dateRange, setDateRange] =
     useState<{ date: string; day: string; formattedDate: string }[]>();
+
+  const [selectedDate, setSelectedDate] = useState(
+    moment().format('MM/DD/YYYY')
+  );
+
+  const getMedicationList = async (selectedDate: string) => {
+    const user = await getLocalStorage('userDetail');
+
+    try {
+      const q = query(
+        collection(db, 'medication'),
+        where('userEmail', '==', user.email),
+        where('dates', 'array-contains', selectedDate)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      setMedList([]);
+
+      querySnapshot.forEach((doc) => {
+        console.log('docId: ' + doc.id + '==>', doc.data());
+        setMedList((prev) => [...prev, doc.data()]);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   useEffect(() => {
     setDateRange(getDateRangeList());
   }, []);
+
+  useEffect(() => {
+    getDateRangeList();
+    getMedicationList(selectedDate);
+  }, [selectedDate]);
 
   return (
     <View style={{ marginTop: 25 }}>
@@ -31,13 +75,52 @@ const MedicationList = () => {
         horizontal
         showsHorizontalScrollIndicator={false}
         data={dateRange}
-        renderItem={({ item, index }) => {
+        keyExtractor={(item, i) => `${item.formattedDate}-${i}`}
+        renderItem={({ item }) => {
           return (
-            <View key={index} style={styles.dateGroup}>
-              <Text style={styles.day}>{item.day}</Text>
-              <Text style={styles.date}>{item.date}</Text>
-            </View>
+            <TouchableOpacity
+              onPress={() => setSelectedDate(item.formattedDate)}
+              style={[
+                styles.dateGroup,
+                {
+                  backgroundColor:
+                    item.formattedDate === selectedDate
+                      ? colors.PRIMARY
+                      : colors.LIGHT_GRAY_BORDER,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.day,
+                  {
+                    color:
+                      item.formattedDate === selectedDate ? 'white' : 'black',
+                  },
+                ]}
+              >
+                {item.day}
+              </Text>
+              <Text
+                style={[
+                  styles.date,
+                  {
+                    color:
+                      item.formattedDate === selectedDate ? 'white' : 'black',
+                  },
+                ]}
+              >
+                {item.date}
+              </Text>
+            </TouchableOpacity>
           );
+        }}
+      />
+
+      <FlatList
+        data={medList}
+        renderItem={({ item }) => {
+          return <MedicationCardItem medicine={item} />;
         }}
       />
     </View>

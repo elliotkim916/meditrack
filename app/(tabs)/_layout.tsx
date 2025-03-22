@@ -9,12 +9,12 @@ const TabLayout = () => {
   useEffect(() => {
     const getUserDetail = async () => {
       const userInfo = await getLocalStorage('userDetail');
-      console.log('USER INFO', userInfo);
+
       if (!userInfo) {
         router.replace('/login');
       }
     };
-    console.log('HERE?');
+
     getUserDetail();
   }, []);
 

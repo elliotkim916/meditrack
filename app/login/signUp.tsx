@@ -20,7 +20,6 @@ const SignUp = () => {
   const [userName, setUserName] = useState('');
 
   const onCreateAccount = async () => {
-    console.log('ON CREATE CALLED');
     if (!email || !password || !userName) {
       Toast.show({
         type: 'error',
