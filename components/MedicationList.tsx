@@ -13,41 +13,60 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import EmptyState from './EmptyState';
 import MedicationCardItem from './MedicationCardItem';
+
+export type MedListItem = {
+  docId: string;
+  dose: string;
+  endDate: number;
+  startDate: number;
+  name: string;
+  reminder: string;
+  type: {
+    icon: string;
+    name: string;
+  };
+  userEmail: string;
+  when: string;
+};
 
 const MedicationList = () => {
   const getDateRangeList = () => {
     return getDateRangeToDisplay();
   };
 
-  const [medList, setMedList] = useState<any[]>([]);
+  const [medList, setMedList] = useState<MedListItem[]>([]);
   const [dateRange, setDateRange] =
     useState<{ date: string; day: string; formattedDate: string }[]>();
 
   const [selectedDate, setSelectedDate] = useState(
     moment().format('MM/DD/YYYY')
   );
+  const [loading, setLoading] = useState(false);
 
   const getMedicationList = async (selectedDate: string) => {
+    setLoading(true);
+    setMedList([]);
     const user = await getLocalStorage('userDetail');
 
     try {
       const q = query(
         collection(db, 'medication'),
-        where('userEmail', '==', user.email),
-        where('dates', 'array-contains', selectedDate)
+        where('userEmail', '==', user.email)
+        // where('dates', 'array-contains', selectedDate)
       );
 
       const querySnapshot = await getDocs(q);
 
-      setMedList([]);
-
       querySnapshot.forEach((doc) => {
         console.log('docId: ' + doc.id + '==>', doc.data());
-        setMedList((prev) => [...prev, doc.data()]);
+        setMedList((prev) => [...prev, doc.data()] as MedListItem[]);
       });
     } catch (e) {
       console.log(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,7 +98,10 @@ const MedicationList = () => {
         renderItem={({ item }) => {
           return (
             <TouchableOpacity
-              onPress={() => setSelectedDate(item.formattedDate)}
+              onPress={() => {
+                setSelectedDate(item.formattedDate);
+                getMedicationList(item.formattedDate);
+              }}
               style={[
                 styles.dateGroup,
                 {
@@ -117,12 +139,22 @@ const MedicationList = () => {
         }}
       />
 
-      <FlatList
-        data={medList}
-        renderItem={({ item }) => {
-          return <MedicationCardItem medicine={item} />;
-        }}
-      />
+      {medList.length > 0 ? (
+        <FlatList
+          data={medList}
+          onRefresh={() => getMedicationList(selectedDate)}
+          refreshing={loading}
+          renderItem={({ item }) => {
+            return (
+              <TouchableOpacity>
+                <MedicationCardItem medicine={item} />
+              </TouchableOpacity>
+            );
+          }}
+        />
+      ) : (
+        <EmptyState />
+      )}
     </View>
   );
 };
