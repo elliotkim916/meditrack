@@ -1,12 +1,14 @@
 import colors from '@/Constant/colors';
 import { getLocalStorage } from '@/service/Storage';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { User } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 const Header = () => {
   const [user, setUser] = useState<User>();
+  const router = useRouter();
 
   useEffect(() => {
     const getUserDetail = async () => {
@@ -44,7 +46,9 @@ const Header = () => {
           </Text>
         </View>
 
-        <Feather name="settings" size={34} color={colors.DARK_GRAY} />
+        <TouchableOpacity onPress={() => router.push('/add-new-medication')}>
+          <Ionicons name="medkit" size={34} color={colors.PRIMARY} />
+        </TouchableOpacity>
       </View>
     </View>
   );
