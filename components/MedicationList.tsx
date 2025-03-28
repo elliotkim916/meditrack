@@ -2,6 +2,7 @@ import { db } from '@/config/FirebaseConfig';
 import colors from '@/Constant/colors';
 import { getDateRangeToDisplay } from '@/service/ConvertDateTime';
 import { getLocalStorage } from '@/service/Storage';
+import { useRouter } from 'expo-router';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -44,6 +45,7 @@ const MedicationList = () => {
     moment().format('MM/DD/YYYY')
   );
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const getMedicationList = async (selectedDate: string) => {
     setLoading(true);
@@ -146,7 +148,14 @@ const MedicationList = () => {
           refreshing={loading}
           renderItem={({ item }) => {
             return (
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  router.push({
+                    pathname: '/action-modal',
+                    params: { ...item, selectedDate },
+                  })
+                }
+              >
                 <MedicationCardItem medicine={item} />
               </TouchableOpacity>
             );

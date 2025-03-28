@@ -6,6 +6,7 @@ const RootLayout = () => {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="login" />
       <Stack.Screen name="add-new-medication" />
+      <Stack.Screen name="action-modal" options={{ presentation: 'modal' }} />
     </Stack>
   );
 };
