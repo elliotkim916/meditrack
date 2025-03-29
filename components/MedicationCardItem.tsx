@@ -1,14 +1,37 @@
 import colors from '@/Constant/colors';
-import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { MedListItem } from './MedicationList';
 
 interface Props {
   medicine: MedListItem;
+  selectedDate?: string;
 }
 
-const MedicationCardItem = ({ medicine }: Props) => {
+interface Status {
+  date: string;
+  status: string;
+  time: string;
+}
+
+const MedicationCardItem = ({ medicine, selectedDate }: Props) => {
+  const [status, setStatus] = useState<Status>();
+
+  const checkStatus = () => {
+    if (medicine.action) {
+      const data = medicine?.action.find((item) => item.date === selectedDate);
+      console.log('DATA', data);
+      setStatus(data);
+    }
+  };
+
+  useEffect(() => {
+    if (medicine) {
+      checkStatus();
+    }
+  }, [medicine]);
+
   return (
     <View style={styles.container}>
       <View style={styles.subContainer}>
@@ -35,6 +58,16 @@ const MedicationCardItem = ({ medicine }: Props) => {
           {medicine?.reminder}
         </Text>
       </View>
+
+      {status?.date && (
+        <View style={styles.statusContainer}>
+          {status.status === 'Taken' ? (
+            <MaterialIcons name="check-circle" size={24} color={colors.GREEN} />
+          ) : (
+            <AntDesign name="closecircle" size={24} color="red" />
+          )}
+        </View>
+      )}
     </View>
   );
 };
@@ -65,6 +98,11 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     backgroundColor: 'white',
     alignItems: 'center',
+  },
+  statusContainer: {
+    position: 'absolute',
+    top: 5,
+    padding: 7,
   },
 });
 

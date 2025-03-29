@@ -1,12 +1,25 @@
 import MedicationCardItem from '@/components/MedicationCardItem';
 import { MedListItem } from '@/components/MedicationList';
+import { db } from '@/config/FirebaseConfig';
 import colors from '@/Constant/colors';
-import { useLocalSearchParams } from 'expo-router';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import moment from 'moment';
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 const MedicationActionModal = () => {
   const medicine = useLocalSearchParams();
+  const router = useRouter();
 
   const updatedMedicine = {
     docId: medicine.docId,
@@ -21,6 +34,30 @@ const MedicationActionModal = () => {
     when: medicine.when,
   } as MedListItem;
 
+  const updateActionStatus = async (status: string) => {
+    try {
+      const docRef = doc(db, 'medication', updatedMedicine.docId);
+      await updateDoc(docRef, {
+        action: arrayUnion({
+          status,
+          time: moment().format('LT'),
+          date: medicine.selectedDate,
+        }),
+      });
+
+      if (Platform.OS === 'web') {
+        alert('Response Saved!');
+        router.push('/(tabs)');
+      } else {
+        Alert.alert(status, 'Response Saved!', [
+          { text: 'Okay', onPress: () => router.replace('/(tabs)') },
+        ]);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Image
@@ -34,6 +71,34 @@ const MedicationActionModal = () => {
       <Text style={{ fontSize: 18 }}>Its time to take!</Text>
 
       <MedicationCardItem medicine={updatedMedicine} />
+
+      <View style={styles.buttonContainer}>
+        <View>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => updateActionStatus('Missed')}
+          >
+            <MaterialIcons name="close" size={24} color="red" />
+            <Text style={{ fontSize: 20, color: 'red' }}>Missed</Text>
+          </TouchableOpacity>
+        </View>
+        <View>
+          <TouchableOpacity
+            style={styles.successButton}
+            onPress={() => updateActionStatus('Taken')}
+          >
+            <MaterialIcons name="check" size={24} color="white" />
+            <Text style={{ fontSize: 20, color: 'white' }}>Taken</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <TouchableOpacity
+        style={{ position: 'absolute', bottom: 25 }}
+        onPress={() => router.back()}
+      >
+        <AntDesign name="closecircle" size={44} color={colors.GRAY} />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -45,6 +110,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: '100%',
     backgroundColor: '#ffffff',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 25,
+  },
+  closeButton: {
+    padding: 10,
+    flexDirection: 'row',
+    gap: 6,
+    borderWidth: 1,
+    alignItems: 'center',
+    borderColor: 'red',
+    borderRadius: 10,
+  },
+  successButton: {
+    padding: 10,
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+    borderRadius: 10,
+    backgroundColor: colors.GREEN,
   },
 });
 export default MedicationActionModal;

@@ -30,6 +30,7 @@ export type MedListItem = {
   };
   userEmail: string;
   when: string;
+  action?: { date: string; status: string; time: string }[];
 };
 
 const MedicationList = () => {
@@ -156,7 +157,10 @@ const MedicationList = () => {
                   })
                 }
               >
-                <MedicationCardItem medicine={item} />
+                <MedicationCardItem
+                  medicine={item}
+                  selectedDate={selectedDate}
+                />
               </TouchableOpacity>
             );
           }}
