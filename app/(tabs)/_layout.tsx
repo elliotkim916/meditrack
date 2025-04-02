@@ -31,9 +31,10 @@ const TabLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="AddNew"
+        name="History"
         options={{
-          tabBarLabel: 'Add New',
+          headerShown: false,
+          tabBarLabel: 'History',
           tabBarIcon: ({ color, size }) => (
             <FontAwesome name="plus-square" size={size} color={color} />
           ),

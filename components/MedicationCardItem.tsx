@@ -7,6 +7,7 @@ import { MedListItem } from './MedicationList';
 interface Props {
   medicine: MedListItem;
   selectedDate?: string;
+  iconUri?: string;
 }
 
 interface Status {
@@ -15,7 +16,7 @@ interface Status {
   time: string;
 }
 
-const MedicationCardItem = ({ medicine, selectedDate }: Props) => {
+const MedicationCardItem = ({ medicine, selectedDate, iconUri }: Props) => {
   const [status, setStatus] = useState<Status>();
 
   const checkStatus = () => {
@@ -37,7 +38,7 @@ const MedicationCardItem = ({ medicine, selectedDate }: Props) => {
       <View style={styles.subContainer}>
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: medicine.type.icon }}
+            source={{ uri: medicine.type.icon ?? iconUri }}
             style={{ width: 60, height: 60 }}
           />
         </View>

@@ -1,11 +1,11 @@
+import { MedListItem } from '@/components/MedicationList';
 import { db } from '@/config/FirebaseConfig';
 import colors from '@/Constant/colors';
-import { getDateRangeToDisplay } from '@/service/ConvertDateTime';
+import { getPrevDateRangeToDisplay } from '@/service/ConvertDateTime';
 import { getLocalStorage } from '@/service/Storage';
-import { useRouter } from 'expo-router';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -14,43 +14,25 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import EmptyState from './EmptyState';
-import MedicationCardItem from './MedicationCardItem';
 
-export type MedListItem = {
-  docId: string;
-  dose: string;
-  endDate: number;
-  startDate: number;
-  name: string;
-  reminder: string;
-  type: {
-    icon: string;
-    name: string;
-  };
-  userEmail: string;
-  when: string;
-  action?: { date: string; status: string; time: string }[];
-};
-
-const MedicationList = () => {
-  const getDateRangeList = () => {
-    return getDateRangeToDisplay();
-  };
-
+const History = () => {
+  const [loading, setLoading] = useState(false);
   const [medList, setMedList] = useState<MedListItem[]>([]);
-  const [dateRange, setDateRange] =
-    useState<{ date: string; day: string; formattedDate: string }[]>();
-
   const [selectedDate, setSelectedDate] = useState(
     moment().format('MM/DD/YYYY')
   );
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [dateRange, setDateRange] =
+    useState<{ date: string; day: string; formatted: string }[]>();
+
+  const getDateList = () => {
+    const dates = getPrevDateRangeToDisplay();
+    setDateRange(dates);
+  };
 
   const getMedicationList = async (selectedDate: string) => {
     setLoading(true);
     setMedList([]);
+
     const user = await getLocalStorage('userDetail');
 
     try {
@@ -74,42 +56,36 @@ const MedicationList = () => {
   };
 
   useEffect(() => {
-    setDateRange(getDateRangeList());
+    getDateList();
+    getMedicationList(selectedDate);
   }, []);
 
-  useEffect(() => {
-    getDateRangeList();
-    getMedicationList(selectedDate);
-  }, [selectedDate]);
-
   return (
-    <View style={{ marginTop: 25 }}>
+    <View style={styles.mainContainer}>
       <Image
-        source={require('./../assets/images/medication.jpeg')}
-        style={{
-          width: '100%',
-          height: 200,
-          borderRadius: 15,
-        }}
+        style={styles.imageBase}
+        source={require('./../../assets/images/med-history.png')}
       />
+      <Text style={styles.header}>Medication History</Text>
+
       <FlatList
         style={{ marginTop: 15 }}
         horizontal
         showsHorizontalScrollIndicator={false}
         data={dateRange}
-        keyExtractor={(item, i) => `${item.formattedDate}-${i}`}
+        keyExtractor={(item, i) => `${item.formatted}-${i}`}
         renderItem={({ item }) => {
           return (
             <TouchableOpacity
               onPress={() => {
-                setSelectedDate(item.formattedDate);
-                getMedicationList(item.formattedDate);
+                setSelectedDate(item.formatted);
+                // getMedicationList(item.formattedDate);
               }}
               style={[
                 styles.dateGroup,
                 {
                   backgroundColor:
-                    item.formattedDate === selectedDate
+                    item.formatted === selectedDate
                       ? colors.PRIMARY
                       : colors.LIGHT_GRAY_BORDER,
                 },
@@ -119,8 +95,7 @@ const MedicationList = () => {
                 style={[
                   styles.day,
                   {
-                    color:
-                      item.formattedDate === selectedDate ? 'white' : 'black',
+                    color: item.formatted === selectedDate ? 'white' : 'black',
                   },
                 ]}
               >
@@ -130,8 +105,7 @@ const MedicationList = () => {
                 style={[
                   styles.date,
                   {
-                    color:
-                      item.formattedDate === selectedDate ? 'white' : 'black',
+                    color: item.formatted === selectedDate ? 'white' : 'black',
                   },
                 ]}
               >
@@ -141,42 +115,25 @@ const MedicationList = () => {
           );
         }}
       />
-
-      {medList.length > 0 ? (
-        <FlatList
-          data={medList}
-          onRefresh={() => getMedicationList(selectedDate)}
-          refreshing={loading}
-          renderItem={({ item }: { item: MedListItem }) => {
-            return (
-              <TouchableOpacity
-                onPress={() =>
-                  router.push({
-                    pathname: '/action-modal',
-                    params: {
-                      ...item,
-                      selectedDate: selectedDate,
-                    },
-                  })
-                }
-              >
-                <MedicationCardItem
-                  medicine={item}
-                  selectedDate={selectedDate}
-                  iconUri={item.type.icon}
-                />
-              </TouchableOpacity>
-            );
-          }}
-        />
-      ) : (
-        <EmptyState />
-      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    padding: 25,
+    backgroundColor: 'white',
+  },
+  imageBase: {
+    width: '100%',
+    height: 200,
+    borderRadius: 15,
+  },
+  header: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    marginTop: 20,
+  },
   dateGroup: {
     padding: 15,
     backgroundColor: colors.LIGHT_GRAY_BORDER,
@@ -193,5 +150,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default MedicationList;
+export default History;

@@ -58,6 +58,7 @@ const MedicationActionModal = () => {
     }
   };
 
+  console.log('MEDICINE', medicine);
   return (
     <View style={styles.container}>
       <Image
@@ -70,7 +71,7 @@ const MedicationActionModal = () => {
       </Text>
       <Text style={{ fontSize: 18 }}>Its time to take!</Text>
 
-      <MedicationCardItem medicine={updatedMedicine} />
+      <MedicationCardItem medicine={updatedMedicine} iconUri={medicine.type} />
 
       <View style={styles.buttonContainer}>
         <View>
