@@ -21,6 +21,7 @@ const HomeScreen = () => {
   return (
     <FlatList
       data={[]}
+      renderItem={() => <></>}
       ListHeaderComponent={
         <View
           style={{

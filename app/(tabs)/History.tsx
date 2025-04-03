@@ -1,8 +1,10 @@
+import MedicationCardItem from '@/components/MedicationCardItem';
 import { MedListItem } from '@/components/MedicationList';
 import { db } from '@/config/FirebaseConfig';
 import colors from '@/Constant/colors';
 import { getPrevDateRangeToDisplay } from '@/service/ConvertDateTime';
 import { getLocalStorage } from '@/service/Storage';
+import { useRouter } from 'expo-router';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
@@ -16,6 +18,7 @@ import {
 } from 'react-native';
 
 const History = () => {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [medList, setMedList] = useState<MedListItem[]>([]);
   const [selectedDate, setSelectedDate] = useState(
@@ -61,61 +64,114 @@ const History = () => {
   }, []);
 
   return (
-    <View style={styles.mainContainer}>
-      <Image
-        style={styles.imageBase}
-        source={require('./../../assets/images/med-history.png')}
-      />
-      <Text style={styles.header}>Medication History</Text>
+    <FlatList
+      data={[]}
+      renderItem={() => <></>}
+      style={{
+        height: '100%',
+        backgroundColor: 'white',
+      }}
+      ListHeaderComponent={
+        <View style={styles.mainContainer}>
+          <Image
+            style={styles.imageBase}
+            source={require('./../../assets/images/med-history.png')}
+          />
+          <Text style={styles.header}>Medication History</Text>
 
-      <FlatList
-        style={{ marginTop: 15 }}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        data={dateRange}
-        keyExtractor={(item, i) => `${item.formatted}-${i}`}
-        renderItem={({ item }) => {
-          return (
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedDate(item.formatted);
-                // getMedicationList(item.formattedDate);
+          <FlatList
+            style={{ marginTop: 15 }}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={dateRange}
+            keyExtractor={(item, i) => `${item.formatted}-${i}`}
+            renderItem={({ item }) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedDate(item.formatted);
+                    getMedicationList(item.formatted);
+                  }}
+                  style={[
+                    styles.dateGroup,
+                    {
+                      backgroundColor:
+                        item.formatted === selectedDate
+                          ? colors.PRIMARY
+                          : colors.LIGHT_GRAY_BORDER,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.day,
+                      {
+                        color:
+                          item.formatted === selectedDate ? 'white' : 'black',
+                      },
+                    ]}
+                  >
+                    {item.day}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.date,
+                      {
+                        color:
+                          item.formatted === selectedDate ? 'white' : 'black',
+                      },
+                    ]}
+                  >
+                    {item.date}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
+          />
+
+          {medList.length > 0 ? (
+            <FlatList
+              data={medList}
+              onRefresh={() => getMedicationList(selectedDate)}
+              refreshing={loading}
+              renderItem={({ item }: { item: MedListItem }) => {
+                return (
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: '/action-modal',
+                        params: {
+                          ...item,
+                          selectedDate,
+                        },
+                      })
+                    }
+                  >
+                    <MedicationCardItem
+                      medicine={item}
+                      selectedDate={selectedDate}
+                      iconUri={item.type.icon}
+                    />
+                  </TouchableOpacity>
+                );
               }}
-              style={[
-                styles.dateGroup,
-                {
-                  backgroundColor:
-                    item.formatted === selectedDate
-                      ? colors.PRIMARY
-                      : colors.LIGHT_GRAY_BORDER,
-                },
-              ]}
+            />
+          ) : (
+            <Text
+              style={{
+                fontSize: 25,
+                padding: 30,
+                fontWeight: 'bold',
+                color: colors.GRAY,
+                textAlign: 'center',
+              }}
             >
-              <Text
-                style={[
-                  styles.day,
-                  {
-                    color: item.formatted === selectedDate ? 'white' : 'black',
-                  },
-                ]}
-              >
-                {item.day}
-              </Text>
-              <Text
-                style={[
-                  styles.date,
-                  {
-                    color: item.formatted === selectedDate ? 'white' : 'black',
-                  },
-                ]}
-              >
-                {item.date}
-              </Text>
-            </TouchableOpacity>
-          );
-        }}
-      />
-    </View>
+              No Medication Found
+            </Text>
+          )}
+        </View>
+      }
+    />
   );
 };
 

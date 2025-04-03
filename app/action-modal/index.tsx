@@ -1,5 +1,4 @@
 import MedicationCardItem from '@/components/MedicationCardItem';
-import { MedListItem } from '@/components/MedicationList';
 import { db } from '@/config/FirebaseConfig';
 import colors from '@/Constant/colors';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
@@ -17,6 +16,23 @@ import {
   View,
 } from 'react-native';
 
+export type ActionModalParams = {
+  selectedDate: string;
+  docId: string;
+  dose: string;
+  endDate: number;
+  startDate: number;
+  name: string;
+  reminder: string;
+  type: {
+    icon: string;
+    name: string;
+  };
+  userEmail: string;
+  when: string;
+  action?: { date: string; status: string; time: string }[];
+};
+
 const MedicationActionModal = () => {
   const medicine = useLocalSearchParams();
   const router = useRouter();
@@ -32,7 +48,7 @@ const MedicationActionModal = () => {
     type: { icon: '', name: '' },
     userEmail: medicine.userEmail,
     when: medicine.when,
-  } as MedListItem;
+  } as ActionModalParams;
 
   const updateActionStatus = async (status: string) => {
     try {
@@ -58,7 +74,6 @@ const MedicationActionModal = () => {
     }
   };
 
-  console.log('MEDICINE', medicine);
   return (
     <View style={styles.container}>
       <Image
@@ -71,7 +86,7 @@ const MedicationActionModal = () => {
       </Text>
       <Text style={{ fontSize: 18 }}>Its time to take!</Text>
 
-      <MedicationCardItem medicine={updatedMedicine} iconUri={medicine.type} />
+      <MedicationCardItem medicine={updatedMedicine} />
 
       <View style={styles.buttonContainer}>
         <View>

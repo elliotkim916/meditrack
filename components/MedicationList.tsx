@@ -147,7 +147,7 @@ const MedicationList = () => {
           data={medList}
           onRefresh={() => getMedicationList(selectedDate)}
           refreshing={loading}
-          renderItem={({ item }: { item: MedListItem }) => {
+          renderItem={({ item }) => {
             return (
               <TouchableOpacity
                 onPress={() =>
@@ -155,7 +155,7 @@ const MedicationList = () => {
                     pathname: '/action-modal',
                     params: {
                       ...item,
-                      selectedDate: selectedDate,
+                      selectedDate,
                     },
                   })
                 }
